@@ -18,7 +18,7 @@
   "require-dev" : {
     "symfony/console" : "~2.0 || ~3.0"   
   },
-  "target-dir" : "Evence/Bundle/OptinBundle",
+  "target-dir" : "Evence/Bundle/SoftDeleteableExtensionBundle",
   "authors" : [ {
     "name" : "Ruben Harms",
     "homepage" : "http://www.rubenharms.nl/"
