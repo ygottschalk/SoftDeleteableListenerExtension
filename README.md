@@ -1,7 +1,7 @@
 # SoftDeleteableListenerExtensionBundle
 Extensions to Gedmo's softDeleteable listener.
 
-Provides the onSoftDelete functionality to an association to a doctrine entity. This function behaves like the SQL function onDelete (when the owner side is deleted). *This will prevent Doctrine errors when a reference is soft deleted.*
+Provides the onSoftDelete functionality to an association of a doctrine entity. This function behaves like the SQL function onDelete (when the owner side is deleted). *This will prevent Doctrine errors when a reference is soft deleted.*
 
 **Cascade delete entity**
 
