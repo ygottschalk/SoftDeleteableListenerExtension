@@ -53,3 +53,20 @@ use Evence\Bundle\SoftDeleteableExtensionBundle\Mapping\Annotation as Evence;
   }
   
 ```
+
+
+## Install 
+
+**Install with composer:**
+```
+composer require evence/soft-deleteable-extension-bundle
+```
+
+Add the bundle to AppKernel.php:
+
+``` php
+ $bundles = array(
+     ...
+     new Evence\Bundle\SoftDeleteableExtensionBundle\EvenceSoftDeleteableExtensionBundle()
+ );
+```
