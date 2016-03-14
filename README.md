@@ -25,6 +25,13 @@ The example above set the reference to null.
 
 
 ``` php
+<?php
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Evence\Bundle\SoftDeleteableExtensionBundle\Mapping\Annotation as Evence;
+
   
  /*
  * @ORM\Entity(repositoryClass="AppBundle\Entity\AdvertisementRepository")
