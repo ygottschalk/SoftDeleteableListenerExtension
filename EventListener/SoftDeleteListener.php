@@ -32,26 +32,37 @@ class SoftDeleteListener
         $em = $args->getEntityManager();
         $entity = $args->getEntity();
         
+        $entityReflection = new \ReflectionObject($entity);
+        
         $namespaces = $em->getConfiguration()
             ->getMetadataDriverImpl()
             ->getAllClassNames();
         
         $reader = new AnnotationReader();
         $accessor = PropertyAccess::createPropertyAccessor();
-        
         foreach ($namespaces as $namespace) {
+            
+            $reflectionClass = new \ReflectionClass($namespace);
+            if ($reflectionClass->isAbstract())
+                continue;
             
             $reflectionObject = new \ReflectionObject(new $namespace());
             foreach ($reflectionObject->getProperties() as $property) {
                 if ($onDelete = $reader->getPropertyAnnotation($property, 'Evence\Bundle\SoftDeleteableExtensionBundle\Mapping\Annotation\onSoftDelete')) {
-                    $objects = null;                    
+                    $objects = null;
                     if ($manyToOne = $reader->getPropertyAnnotation($property, 'Doctrine\ORM\Mapping\ManyToOne')) {
-                        if ($entity instanceof $manyToOne->targetEntity) {
+                        
+                        $ns = $manyToOne->targetEntity;
+                        if (! preg_match('#^\\\#', $ns)) //
+                            $ns = $entityReflection->getNamespaceName() . '\\' . $ns;
+                        
+                        if ($entity instanceof $ns) {
                             $objects = $em->getRepository($namespace)->findBy([
                                 $property->name => $entity
                             ]);
                         }
                     }
+                    
                     if ($objects) {
                         foreach ($objects as $object) {
                             if (strtoupper($onDelete->type) == 'SET NULL') {
