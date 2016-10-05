@@ -5,7 +5,7 @@ namespace Evence\Bundle\SoftDeleteableExtensionBundle\Mapping\Annotation;
 use Doctrine\Common\Annotations\Annotation;
 
 /**
- * onSoftDelete annotation for onSoftDelete behavioral extension
+ * onSoftDelete annotation for onSoftDelete behavioral extension.
  *
  * @Annotation
  * @Target("PROPERTY")
