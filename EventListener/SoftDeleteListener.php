@@ -51,10 +51,10 @@ class SoftDeleteListener
                     if ($manyToOne = $reader->getPropertyAnnotation($property, 'Doctrine\ORM\Mapping\ManyToOne')) {
                         
                         $ns = null;
-                        $nsOrginal = $manyToOne->targetEntity;
+                        $nsOriginal = $manyToOne->targetEntity;
                         $nsFromRelativeToAbsolute = $entityReflection->getNamespaceName().'\\'.$manyToOne->targetEntity;
                         $nsFromRoot = '\\'.$manyToOne->targetEntity;
-                        if(class_exists($nsOrginal)){
+                        if(class_exists($nsOriginal)){
                            $ns = $nsOriginal;
                         }
                         elseif(class_exists($nsFromRoot)){
