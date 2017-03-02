@@ -49,11 +49,21 @@ class SoftDeleteListener
                 if ($onDelete = $reader->getPropertyAnnotation($property, 'Evence\Bundle\SoftDeleteableExtensionBundle\Mapping\Annotation\onSoftDelete')) {
                     $objects = null;
                     if ($manyToOne = $reader->getPropertyAnnotation($property, 'Doctrine\ORM\Mapping\ManyToOne')) {
-                        $ns = $manyToOne->targetEntity;
-                        if (!preg_match('#^\\\#', $ns)) {
-                            $ns = $entityReflection->getNamespaceName().'\\'.$ns;
+                        
+                        $ns = null;
+                        $nsOrginal = $manyToOne->targetEntity;
+                        $nsFromRelativeToAbsolute = $entityReflection->getNamespaceName().'\\'.$manyToOne->targetEntity;
+                        $nsFromRoot = '\\'.$manyToOne->targetEntity;
+                        if(class_exists($nsOrginal)){
+                           $ns = $nsOriginal;
                         }
-
+                        elseif(class_exists($nsFromRoot)){
+                          $ns = $nsFromRoot;
+                        }
+                        elseif(class_exists($nsFromRelativeToAbsolute)){
+                           $ns = $nsFromRelativeToAbsolute;
+                        }
+                        
                         if ($entity instanceof $ns) {
                             $objects = $em->getRepository($namespace)->findBy(array(
                                 $property->name => $entity,
