@@ -64,7 +64,7 @@ class SoftDeleteListener
                            $ns = $nsFromRelativeToAbsolute;
                         }
                         
-                        if ($entity instanceof $ns) {
+                        if ($ns && $entity instanceof $ns) {
                             $objects = $em->getRepository($namespace)->findBy(array(
                                 $property->name => $entity,
                             ));
