@@ -114,7 +114,7 @@ class SoftDeleteListener
 
                             /** @var JoinColumn $joinColumn */
                             $inversedColumn = $inversedColumns[0];
-                            $inversedJoinProperty = $this->getPropertyByColumName($entity, $inversedColumn);
+                            $inversedJoinProperty = $this->getPropertyByColumName($entityReflection, $inversedColumn);
 
 
 
@@ -162,7 +162,7 @@ class SoftDeleteListener
         }
     }
 
-    private function getPropertyByColumName(\Reflector $entityReflection, $name){
+    private function getPropertyByColumName(\ReflectionClass $entityReflection, $name){
 
         $reader = new AnnotationReader();
 
