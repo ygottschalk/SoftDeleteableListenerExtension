@@ -6,6 +6,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Evence\Bundle\SoftDeleteableExtensionBundle\Exception\OnSoftDeleteUnknownTypeException;
 use Evence\Bundle\SoftDeleteableExtensionBundle\Mapping\Annotation\onSoftDelete;
+use Gedmo\Mapping\ExtensionMetadataFactory;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
 /**
@@ -72,6 +73,13 @@ class SoftDeleteListener
                     }
 
                     if ($objects) {
+                        $factory = $em->getMetadataFactory();
+                        $cacheDriver = $factory->getCacheDriver();
+                        $cacheId = ExtensionMetadataFactory::getCacheId($namespace, 'Gedmo\SoftDeleteable');
+                        $softDelete = false;
+                        if (($config = $cacheDriver->fetch($cacheId)) !== false) {
+                            $softDelete = isset($config['softDeleteable']) && $config['softDeleteable'];
+                        }
                         foreach ($objects as $object) {
                             if (strtoupper($onDelete->type) === 'SET NULL') {
                                 $reflProp = $meta->getReflectionProperty($property->name);
@@ -85,7 +93,11 @@ class SoftDeleteListener
                                     $property->name => array($oldValue, null),
                                 ));
                             } elseif (strtoupper($onDelete->type) === 'CASCADE') {
-                                $em->remove($object);
+                                if ($softDelete) {
+                                    $this->softDeleteCascade($em, $config, $object);
+                                } else {
+                                    $em->remove($object);
+                                }
                             } else {
                                 throw new OnSoftDeleteUnknownTypeException($onDelete->type);
                             }
@@ -94,5 +106,29 @@ class SoftDeleteListener
                 }
             }
         }
+    }
+
+    protected function softDeleteCascade($em, $config, $object)
+    {
+        $meta = $em->getClassMetadata(get_class($object));
+        $reflProp = $meta->getReflectionProperty($config['fieldName']);
+        $oldValue = $reflProp->getValue($object);
+        if ($oldValue instanceof \Datetime) {
+            return;
+        }
+
+        //check next level
+        $args = new LifecycleEventArgs($object, $em);
+        $this->preSoftDelete($args);
+
+        $date = new \DateTime();
+        $reflProp->setValue($object, $date);
+
+        $uow = $em->getUnitOfWork();
+        $uow->propertyChanged($object, $config['fieldName'], $oldValue, $date);
+        $uow->scheduleExtraUpdate($object, array(
+            $config['fieldName'] => array($oldValue, $date),
+        ));
+
     }
 }
