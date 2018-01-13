@@ -56,12 +56,14 @@ class SoftDeleteListener
                     $objects = null;
                     $manyToMany = null;
                     $manyToOne = null;
-                    if (($manyToOne = $reader->getPropertyAnnotation($property, 'Doctrine\ORM\Mapping\ManyToOne')) || ($manyToMany = $reader->getPropertyAnnotation($property, 'Doctrine\ORM\Mapping\ManyToMany'))) {
+                    $oneToOne = null;
+                    if (
+                        ($manyToOne = $reader->getPropertyAnnotation($property, 'Doctrine\ORM\Mapping\ManyToOne')) ||
+                        ($manyToMany = $reader->getPropertyAnnotation($property, 'Doctrine\ORM\Mapping\ManyToMany')) ||
+                        ($oneToOne = $reader->getPropertyAnnotation($property, 'Doctrine\ORM\Mapping\OneToOne'))
+                    ) {
 
-                        if($manyToOne)
-                            $relationship = $manyToOne;
-                        else
-                            $relationship = $manyToMany;
+                        $relationship = $manyToOne ?: $manyToMany ?: $oneToOne;
 
                         $ns = null;
                         $nsOriginal = $relationship->targetEntity;
@@ -77,7 +79,7 @@ class SoftDeleteListener
                            $ns = $nsFromRelativeToAbsolute;
                         }
                         
-                        if ($manyToOne && $ns && $entity instanceof $ns) {
+                        if (($manyToOne || $oneToOne) && $ns && $entity instanceof $ns) {
                             $objects = $em->getRepository($namespace)->findBy(array(
                                 $property->name => $entity,
                             ));
