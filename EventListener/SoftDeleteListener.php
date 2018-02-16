@@ -86,14 +86,23 @@ class SoftDeleteListener
                         }
                         elseif($manyToMany) {
 
-                            if (strtoupper($onDelete->type) === 'SET NULL') {
-                                throw new \Exception('SET NULL is not supported for ManyToMany relationships');
-                            }
+                            $mappedSide = get_class($entity) === $namespace;
+                            $inversedSide = ($ns && $entity instanceof $ns);
+                            if ($mappedSide || $inversedSide) {
 
-                            $propertyAccessor = PropertyAccess::createPropertyAccessor();
-                            $collection = $propertyAccessor->getValue($entity, $property->name);
-                            $collection->clear();
-                            continue;
+                                if (strtoupper($onDelete->type) === 'SET NULL') {
+                                    throw new \Exception('SET NULL is not supported for ManyToMany relationships');
+                                }
+
+                                try {
+                                    $propertyAccessor = PropertyAccess::createPropertyAccessor();
+                                    $collection = $propertyAccessor->getValue($entity, $property->name);
+                                    $collection->clear();
+                                    continue;
+                                } catch (\Exception $e) {
+                                    throw new \Exception(sprintf('No accessor found for %s in %s', $property->name, get_class($entity)));
+                                }
+                            }
                         }
                     }
 
