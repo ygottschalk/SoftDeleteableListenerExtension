@@ -86,9 +86,11 @@ class SoftDeleteListener
                         }
                         elseif($manyToMany) {
 
-                            $mappedSide = get_class($entity) === $namespace;
-                            $inversedSide = ($ns && $entity instanceof $ns);
-                            if ($mappedSide || $inversedSide) {
+                            // For ManyToMany relations, we only delete the relationship between
+                            // two entities. This can be done on both side of the relation.
+                            $allowMappedSide = get_class($entity) === $namespace;
+                            $allowInversedSide = ($ns && $entity instanceof $ns);
+                            if ($allowMappedSide || $allowInversedSide) {
 
                                 if (strtoupper($onDelete->type) === 'SET NULL') {
                                     throw new \Exception('SET NULL is not supported for ManyToMany relationships');
