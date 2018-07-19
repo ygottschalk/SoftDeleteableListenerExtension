@@ -18,6 +18,12 @@ To (soft-)delete an entity when its parent record is soft-deleted :
  @Evence\onSoftDelete(type="SET NULL")
 ```
 
+**Replace reference by some property marked as successor (must be of same entity class)**
+
+```
+ @Evence\onSoftDelete(type="SUCCESSOR")
+```
+
 ## Entity example
 
 ``` php
