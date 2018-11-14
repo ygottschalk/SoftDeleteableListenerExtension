@@ -105,15 +105,19 @@ class SoftDeleteListener
                                 $mtmRelations = $em->getRepository($namespace)->createQueryBuilder('entity')
                                     ->innerJoin(sprintf('entity.%s', $property->name), 'mtm')
                                     ->addSelect('mtm')
-                                    ->andWhere(sprintf(':entity MEMBER entity.%s', $property->name))
+                                    ->andWhere(sprintf(':entity MEMBER OF entity.%s', $property->name))
                                     ->setParameter('entity', $entity)
                                     ->getQuery()
                                     ->getResult();
 
                                 foreach ($mtmRelations as $mtmRelation) {
-                                    $propertyAccessor = PropertyAccess::createPropertyAccessor();
-                                    $collection = $propertyAccessor->getValue($mtmRelation, $property->name);
-                                    $collection->removeElement($entity);
+                                    try {
+                                        $propertyAccessor = PropertyAccess::createPropertyAccessor();
+                                        $collection = $propertyAccessor->getValue($mtmRelation, $property->name);
+                                        $collection->removeElement($entity);
+                                    } catch (\Exception $e) {
+                                        throw new \Exception(sprintf('No accessor found for %s in %s', $property->name, get_class($mtmRelation)));
+                                    }
                                 }
                             } elseif ($allowMappedSide) {
                                 try {
