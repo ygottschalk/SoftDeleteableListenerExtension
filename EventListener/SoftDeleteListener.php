@@ -101,7 +101,25 @@ class SoftDeleteListener
                             // two entities. This can be done on both side of the relation.
                             $allowMappedSide = get_class($entity) === $namespace;
                             $allowInversedSide = ($ns && $entity instanceof $ns);
-                            if ($allowMappedSide || $allowInversedSide) {
+                            if ($allowInversedSide) {
+                                $mtmRelations = $em->getRepository($namespace)->createQueryBuilder('entity')
+                                    ->innerJoin(sprintf('entity.%s', $property->name), 'mtm')
+                                    ->addSelect('mtm')
+                                    ->andWhere(sprintf(':entity MEMBER OF entity.%s', $property->name))
+                                    ->setParameter('entity', $entity)
+                                    ->getQuery()
+                                    ->getResult();
+
+                                foreach ($mtmRelations as $mtmRelation) {
+                                    try {
+                                        $propertyAccessor = PropertyAccess::createPropertyAccessor();
+                                        $collection = $propertyAccessor->getValue($mtmRelation, $property->name);
+                                        $collection->removeElement($entity);
+                                    } catch (\Exception $e) {
+                                        throw new \Exception(sprintf('No accessor found for %s in %s', $property->name, get_class($mtmRelation)));
+                                    }
+                                }
+                            } elseif ($allowMappedSide) {
                                 try {
                                     $propertyAccessor = PropertyAccess::createPropertyAccessor();
                                     $collection = $propertyAccessor->getValue($entity, $property->name);
