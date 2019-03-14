@@ -72,9 +72,6 @@ class SoftDeleteListener
                     }
 
                     if (
-                        ($manyToOne = $reader->getPropertyAnnotation($property, ManyToOne::class)) ||
-                        ($manyToMany = $reader->getPropertyAnnotation($property, ManyToMany::class)) ||
-                        ($oneToOne = $reader->getPropertyAnnotation($property, OneToOne::class)) ||
                         ($manyToMany = $associationMapping && $associationMapping->type == ClassMetadataInfo::MANY_TO_MANY ? $associationMapping : null) ||
                         ($manyToOne = $associationMapping && $associationMapping->type == ClassMetadataInfo::MANY_TO_ONE ? $associationMapping : null) ||
                         ($oneToOne = $associationMapping && $associationMapping->type == ClassMetadataInfo::ONE_TO_ONE ? $associationMapping : null)
