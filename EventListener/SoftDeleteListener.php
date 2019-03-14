@@ -328,7 +328,7 @@ class SoftDeleteListener
      */
     protected function isOnDeleteTypeSupported(onSoftDelete $onDelete, $relationship)
     {
-        if (strtoupper($onDelete->type) === 'SET NULL' && ($relationship instanceof ManyToMany || $relationship->type === ClassMetadataInfo::MANY_TO_MANY)) {
+        if (strtoupper($onDelete->type) === 'SET NULL' && ($relationship instanceof ManyToMany || (property_exists($relationship, 'type') && $relationship->type === ClassMetadataInfo::MANY_TO_MANY))) {
             return false;
         }
 
