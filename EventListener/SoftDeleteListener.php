@@ -72,9 +72,6 @@ class SoftDeleteListener
                     }
 
                     if (
-                        ($manyToOne = $reader->getPropertyAnnotation($property, ManyToOne::class)) ||
-                        ($manyToMany = $reader->getPropertyAnnotation($property, ManyToMany::class)) ||
-                        ($oneToOne = $reader->getPropertyAnnotation($property, OneToOne::class)) ||
                         ($manyToMany = $associationMapping && $associationMapping->type == ClassMetadataInfo::MANY_TO_MANY ? $associationMapping : null) ||
                         ($manyToOne = $associationMapping && $associationMapping->type == ClassMetadataInfo::MANY_TO_ONE ? $associationMapping : null) ||
                         ($oneToOne = $associationMapping && $associationMapping->type == ClassMetadataInfo::ONE_TO_ONE ? $associationMapping : null)
@@ -328,7 +325,7 @@ class SoftDeleteListener
      */
     protected function isOnDeleteTypeSupported(onSoftDelete $onDelete, $relationship)
     {
-        if (strtoupper($onDelete->type) === 'SET NULL' && ($relationship instanceof ManyToMany || $relationship->type === ClassMetadataInfo::MANY_TO_MANY)) {
+        if (strtoupper($onDelete->type) === 'SET NULL' && ($relationship instanceof ManyToMany || (property_exists($relationship, 'type') && $relationship->type === ClassMetadataInfo::MANY_TO_MANY))) {
             return false;
         }
 
