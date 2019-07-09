@@ -1,6 +1,6 @@
 {
     "name": "evence/soft-deleteable-extension-bundle",
-    "description": "Provides exta functions to the soft deleteable listener of gedmo",
+    "description": "Provides extra functions to the soft deleteable listener of gedmo",
     "authors": [{
         "name": "Ruben Harms",
         "homepage": "http://www.rubenharms.nl/"
