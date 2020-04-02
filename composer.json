@@ -1,5 +1,5 @@
 {
-    "name": "chieftechs/soft-deleteable-extension-bundle",
+    "name": "evence/soft-deleteable-extension-bundle",
     "description": "Fixed to work with Symfony 4.2+. Adjusted from E-vence/SoftDeleteableListenerExtensionBundle.",
     "authors": [{
         "name": "Ruben Harms",
