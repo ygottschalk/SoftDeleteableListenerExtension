@@ -13,7 +13,7 @@
     "require-dev": {
         "symfony/console": "^4.2"
     },
-    "target-dir": "Chieftechs/SoftDeleteableExtensionBundle",
+    "target-dir": "Evence/Bundle/SoftDeleteableExtensionBundle",
     "minimum-stability": "dev",
     "extra": {
         "branch-alias": {
@@ -21,8 +21,8 @@
         }
     },
     "autoload": {
-        "psr-4": {
-            "Chieftechs\\SoftDeleteableExtensionBundle\\": ""
+        "psr-0": {
+            "Evence\\Bundle\\SoftDeleteableExtensionBundle": ""
         }
     },
     "type": "symfony-bundle"
