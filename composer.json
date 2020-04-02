@@ -13,7 +13,6 @@
     "require-dev": {
         "symfony/console": "^4.2"
     },
-    "target-dir": "Chieftechs/SoftDeleteableExtensionBundle",
     "minimum-stability": "dev",
     "extra": {
         "branch-alias": {
