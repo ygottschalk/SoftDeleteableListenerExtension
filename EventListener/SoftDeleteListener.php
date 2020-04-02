@@ -13,6 +13,7 @@ use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
+use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Evence\Bundle\SoftDeleteableExtensionBundle\Exception\OnSoftDeleteUnknownTypeException;
 use Evence\Bundle\SoftDeleteableExtensionBundle\Mapping\Annotation\onSoftDelete;
 use Evence\Bundle\SoftDeleteableExtensionBundle\Mapping\Annotation\onSoftDeleteSuccessor;
@@ -64,10 +65,16 @@ class SoftDeleteListener
                     $manyToMany = null;
                     $manyToOne = null;
                     $oneToOne = null;
+
+                    $associationMapping = null;
+                    if (array_key_exists($property->getName(), $meta->getAssociationMappings())) {
+                        $associationMapping = (object)$meta->getAssociationMapping($property->getName());
+                    }
+
                     if (
-                        ($manyToOne = $reader->getPropertyAnnotation($property, ManyToOne::class)) ||
-                        ($manyToMany = $reader->getPropertyAnnotation($property, ManyToMany::class)) ||
-                        ($oneToOne = $reader->getPropertyAnnotation($property, OneToOne::class))
+                        ($manyToMany = $associationMapping && $associationMapping->type == ClassMetadataInfo::MANY_TO_MANY ? $associationMapping : null) ||
+                        ($manyToOne = $associationMapping && $associationMapping->type == ClassMetadataInfo::MANY_TO_ONE ? $associationMapping : null) ||
+                        ($oneToOne = $associationMapping && $associationMapping->type == ClassMetadataInfo::ONE_TO_ONE ? $associationMapping : null)
                     ) {
                         /** @var OneToOne|OneToMany|ManyToMany $relationship */
                         $relationship = $manyToOne ?: $manyToMany ?: $oneToOne;
@@ -76,13 +83,11 @@ class SoftDeleteListener
                         $nsOriginal = $relationship->targetEntity;
                         $nsFromRelativeToAbsolute = $entityReflection->getNamespaceName().'\\'.$relationship->targetEntity;
                         $nsFromRoot = '\\'.$relationship->targetEntity;
-                        if(class_exists($nsOriginal)){
+                        if (class_exists($nsOriginal)){
                             $ns = $nsOriginal;
-                        }
-                        elseif(class_exists($nsFromRoot)){
+                        } elseif (class_exists($nsFromRoot)){
                             $ns = $nsFromRoot;
-                        }
-                        elseif(class_exists($nsFromRelativeToAbsolute)){
+                        } elseif (class_exists($nsFromRelativeToAbsolute)){
                             $ns = $nsFromRelativeToAbsolute;
                         }
 
@@ -94,14 +99,30 @@ class SoftDeleteListener
                             $objects = $em->getRepository($namespace)->findBy(array(
                                 $property->name => $entity,
                             ));
-                        }
-                        elseif($manyToMany) {
-
+                        } elseif ($manyToMany) {
                             // For ManyToMany relations, we only delete the relationship between
                             // two entities. This can be done on both side of the relation.
                             $allowMappedSide = get_class($entity) === $namespace;
                             $allowInversedSide = ($ns && $entity instanceof $ns);
-                            if ($allowMappedSide || $allowInversedSide) {
+                            if ($allowInversedSide) {
+                                $mtmRelations = $em->getRepository($namespace)->createQueryBuilder('entity')
+                                    ->innerJoin(sprintf('entity.%s', $property->name), 'mtm')
+                                    ->addSelect('mtm')
+                                    ->andWhere(sprintf(':entity MEMBER OF entity.%s', $property->name))
+                                    ->setParameter('entity', $entity)
+                                    ->getQuery()
+                                    ->getResult();
+
+                                foreach ($mtmRelations as $mtmRelation) {
+                                    try {
+                                        $propertyAccessor = PropertyAccess::createPropertyAccessor();
+                                        $collection = $propertyAccessor->getValue($mtmRelation, $property->name);
+                                        $collection->removeElement($entity);
+                                    } catch (\Exception $e) {
+                                        throw new \Exception(sprintf('No accessor found for %s in %s', $property->name, get_class($mtmRelation)));
+                                    }
+                                }
+                            } elseif ($allowMappedSide) {
                                 try {
                                     $propertyAccessor = PropertyAccess::createPropertyAccessor();
                                     $collection = $propertyAccessor->getValue($entity, $property->name);
@@ -302,9 +323,9 @@ class SoftDeleteListener
      * @param Annotation $relationship
      * @return bool
      */
-    protected function isOnDeleteTypeSupported(onSoftDelete $onDelete, Annotation $relationship)
+    protected function isOnDeleteTypeSupported(onSoftDelete $onDelete, $relationship)
     {
-        if (strtoupper($onDelete->type) === 'SET NULL' && $relationship instanceof ManyToMany) {
+        if (strtoupper($onDelete->type) === 'SET NULL' && ($relationship instanceof ManyToMany || (property_exists($relationship, 'type') && $relationship->type === ClassMetadataInfo::MANY_TO_MANY))) {
             return false;
         }
 
