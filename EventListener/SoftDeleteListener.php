@@ -19,7 +19,6 @@ use Evence\Bundle\SoftDeleteableExtensionBundle\Mapping\Annotation\onSoftDelete;
 use Evence\Bundle\SoftDeleteableExtensionBundle\Mapping\Annotation\onSoftDeleteSuccessor;
 use Gedmo\Mapping\ExtensionMetadataFactory;
 use Gedmo\SoftDeleteable\SoftDeleteableListener as GedmoSoftDeleteableListener;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
 /**
@@ -32,7 +31,6 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
  */
 class SoftDeleteListener
 {
-    use ContainerAwareTrait;
 
     /**
      * @param LifecycleEventArgs $args
