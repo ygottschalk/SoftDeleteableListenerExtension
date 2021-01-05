@@ -308,7 +308,7 @@ class SoftDeleteListener
         //trigger event to check next level
         $em->getEventManager()->dispatchEvent(
             GedmoSoftDeleteableListener::PRE_SOFT_DELETE,
-            LifecycleEventArgs($object, $em)
+            new LifecycleEventArgs($object, $em)
         );
 
         $date = new \DateTime();
