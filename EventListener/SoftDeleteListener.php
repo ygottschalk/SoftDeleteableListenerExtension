@@ -10,7 +10,6 @@ use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Mapping\Annotation;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\ManyToMany;
-use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
@@ -19,7 +18,6 @@ use Evence\Bundle\SoftDeleteableExtensionBundle\Mapping\Annotation\onSoftDelete;
 use Evence\Bundle\SoftDeleteableExtensionBundle\Mapping\Annotation\onSoftDeleteSuccessor;
 use Gedmo\Mapping\ExtensionMetadataFactory;
 use Gedmo\SoftDeleteable\SoftDeleteableListener as GedmoSoftDeleteableListener;
-use Symfony\Component\PropertyAccess\PropertyAccess;
 
 /**
  * Soft delete listener class for onSoftDelete behaviour.
@@ -114,8 +112,16 @@ class SoftDeleteListener
 
                                 foreach ($mtmRelations as $mtmRelation) {
                                     try {
-                                        $propertyAccessor = PropertyAccess::createPropertyAccessor();
-                                        $collection = $propertyAccessor->getValue($mtmRelation, $property->name);
+                                        //$propertyAccessor = PropertyAccess::createPropertyAccessor();
+                                        //$collection = $propertyAccessor->getValue($mtmRelation, $property->name);
+                                        $inAccessible = $property->isPrivate() || $property->isProtected();
+                                        if ($inAccessible) {
+                                            $property->setAccessible(true);
+                                        }
+                                        $collection = $property->getValue($mtmRelation);
+                                        if ($inAccessible) {
+                                            $property->setAccessible(false);
+                                        }
                                         $collection->removeElement($entity);
                                     } catch (\Exception $e) {
                                         throw new \Exception(sprintf('No accessor found for %s in %s', $property->name, get_class($mtmRelation)));
@@ -123,8 +129,16 @@ class SoftDeleteListener
                                 }
                             } elseif ($allowMappedSide) {
                                 try {
-                                    $propertyAccessor = PropertyAccess::createPropertyAccessor();
-                                    $collection = $propertyAccessor->getValue($entity, $property->name);
+                                    //$propertyAccessor = PropertyAccess::createPropertyAccessor();
+                                    //$collection = $propertyAccessor->getValue($entity, $property->name);
+                                    $inAccessible = $property->isPrivate() || $property->isProtected();
+                                    if ($inAccessible) {
+                                        $property->setAccessible(true);
+                                    }
+                                    $collection = $property->getValue($mtmRelation);
+                                    if ($inAccessible) {
+                                        $property->setAccessible(false);
+                                    }
                                     $collection->clear();
                                     continue;
                                 } catch (\Exception $e) {
