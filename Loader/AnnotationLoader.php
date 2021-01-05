@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Evence\Bundle\SoftDeleteableExtensionBundle\EventListener;
+namespace Evence\Bundle\SoftDeleteableExtensionBundle\Loader;
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
 
