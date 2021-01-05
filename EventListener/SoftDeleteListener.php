@@ -305,13 +305,11 @@ class SoftDeleteListener
             return;
         }
 
-        //check next level
-        $args = new LifecycleEventArgs($object, $em);
+        //trigger event to check next level
         $em->getEventManager()->dispatchEvent(
             GedmoSoftDeleteableListener::PRE_SOFT_DELETE,
-            $args
+            LifecycleEventArgs($object, $em)
         );
-        //$this->preSoftDelete($args);
 
         $date = new \DateTime();
         $reflProp->setValue($object, $date);
