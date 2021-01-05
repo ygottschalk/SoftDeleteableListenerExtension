@@ -61,7 +61,8 @@ class Advertisement
 
 **Install with composer:**
 ```
-composer require evence/soft-deleteable-extension-bundle
+composer config repositories.softDeleteableListenerExtension git https://github.com/ygottschalk/SoftDeleteableListenerExtension
+composer require evence/soft-deleteable-extension:dev-no-symfony
 ```
 
 ## Usage
