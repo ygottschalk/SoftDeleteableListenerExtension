@@ -1,4 +1,6 @@
-# SoftDeleteableListenerExtensionBundle
+# SoftDeleteableListenerExtension
+
+**Modified from the original to work standalone (WITHOUT Symfony)**
 
 Extensions to Gedmo's softDeleteable listener which has had this issue reported since 2012 : https://github.com/Atlantic18/DoctrineExtensions/issues/505.
 
@@ -62,13 +64,39 @@ class Advertisement
 composer require evence/soft-deleteable-extension-bundle
 ```
 
-Add the bundle to `app/AppKernel.php`:
+## Usage
 
+To use this, you need to do 2 steps:
+
+- Let `doctrine` load the required annotation files
+- Subscribe / listen to the `preSoftDelete` event
+
+### Let `doctrine` know about the annotations
+
+**Method 1:** using composers autoloader
 ``` php
-# app/AppKernel.php
+# bootstrap.php
 
-$bundles = array(
-    ...
-    new Evence\Bundle\SoftDeleteableExtensionBundle\EvenceSoftDeleteableExtensionBundle(),
-);
+/**
+ * @var ClassLoader $loader
+ */
+$loader = require_once 'vendor/autoload.php';
+
+AnnotationRegistry::registerLoader(array($loader, 'loadClass'));
+```
+
+**Method 2:** using to provided loader
+``` php
+# bootstrap.php
+
+\Evence\Bundle\SoftDeleteableExtensionBundle\Loader\AnnotationLoader::registerAnnotations();
+```
+
+### Listen to the `preSoftDelete` event
+
+```php
+# bootstrap.php
+
+$softDeleteSubscriber = new SoftDeleteSubscriber();
+$entityManager->getEventManager()->addEventSubscriber($softDeleteSubscriber);
 ```
