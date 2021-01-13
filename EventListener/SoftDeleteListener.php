@@ -18,6 +18,7 @@ use Evence\Bundle\SoftDeleteableExtensionBundle\Exception\OnSoftDeleteUnknownTyp
 use Evence\Bundle\SoftDeleteableExtensionBundle\Mapping\Annotation\onSoftDelete;
 use Evence\Bundle\SoftDeleteableExtensionBundle\Mapping\Annotation\onSoftDeleteSuccessor;
 use Gedmo\Mapping\ExtensionMetadataFactory;
+use Gedmo\SoftDeleteable\SoftDeleteableListener as GedmoSoftDeleteableListener;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
@@ -304,9 +305,11 @@ class SoftDeleteListener
             return;
         }
 
-        //check next level
-        $args = new LifecycleEventArgs($object, $em);
-        $this->preSoftDelete($args);
+        //trigger event to check next level
+        $em->getEventManager()->dispatchEvent(
+            GedmoSoftDeleteableListener::PRE_SOFT_DELETE,
+            new LifecycleEventArgs($object, $em)
+        );
 
         $date = new \DateTime();
         $reflProp->setValue($object, $date);
@@ -316,6 +319,11 @@ class SoftDeleteListener
         $uow->scheduleExtraUpdate($object, array(
             $config['fieldName'] => array($oldValue, $date),
         ));
+
+        $em->getEventManager()->dispatchEvent(
+            GedmoSoftDeleteableListener::POST_SOFT_DELETE,
+            new LifecycleEventArgs($object, $em)
+        );
     }
 
     /**
