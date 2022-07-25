@@ -3,6 +3,7 @@
 namespace Evence\Bundle\SoftDeleteableExtensionBundle\EventListener;
 
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\Proxy\Proxy;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManager;
@@ -33,6 +34,16 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 class SoftDeleteListener
 {
     use ContainerAwareTrait;
+
+    /**
+     * @var Reader
+     */
+    protected $reader;
+
+    public function __construct(Reader $reader)
+    {
+        $this->reader = $reader;
+    }
 
     /**
      * @param LifecycleEventArgs $args
@@ -137,15 +148,11 @@ class SoftDeleteListener
                     }
 
                     if ($objects) {
-                        $factory = $em->getMetadataFactory();
-                        $cacheDriver = $factory->getCacheDriver();
-                        $cacheId = ExtensionMetadataFactory::getCacheId($namespace, 'Gedmo\SoftDeleteable');
-                        $softDelete = false;
-                        if (($config = $cacheDriver->fetch($cacheId)) !== false) {
-                            $softDelete = isset($config['softDeleteable']) && $config['softDeleteable'];
-                        }
+                        $reflectionClass = new \ReflectionClass($namespace);
+                        $classAnnotation = $this->reader->getClassAnnotation($reflectionClass, \Gedmo\Mapping\Annotation\SoftDeleteable::class);
+                        $softDelete = $classAnnotation !== null && $classAnnotation->hardDelete !== true;
                         foreach ($objects as $object) {
-                            $this->processOnDeleteOperation($object, $onDelete, $property, $meta, $softDelete, $args, $config);
+                            $this->processOnDeleteOperation($object, $onDelete, $property, $meta, $softDelete, $args, ['fieldName' => $classAnnotation->fieldName]);
                         }
                     }
                 }
