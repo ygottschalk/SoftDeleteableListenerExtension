@@ -3,7 +3,8 @@
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 
-$container->setDefinition('evence.softdeletale.listener.softdelete', new Definition('Evence\Bundle\SoftDeleteableExtensionBundle\EventListener\SoftDeleteListener', array()))
+/** @var \Symfony\Component\DependencyInjection\ContainerBuilder $container */
+$container->setDefinition('evence.softdeletale.listener.softdelete', new Definition('Evence\Bundle\SoftDeleteableExtensionBundle\EventListener\SoftDeleteListener', array(new Reference('annotation_reader'))))
 
 ->addMethodCall('setContainer', array(
     new Reference('service_container'),
