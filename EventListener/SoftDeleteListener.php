@@ -163,8 +163,9 @@ class SoftDeleteListener
                         $reflectionClass = new \ReflectionClass($namespace);
                         $classAnnotation = $this->reader->getClassAnnotation($reflectionClass, \Gedmo\Mapping\Annotation\SoftDeleteable::class);
                         $softDelete = $classAnnotation instanceof \Gedmo\Mapping\Annotation\SoftDeleteable;
+                        $config = ['fieldName' => $classAnnotation !== null ? $classAnnotation->fieldName : null ];
                         foreach ($objects as $object) {
-                            $this->processOnDeleteOperation($object, $onDelete, $property, $meta, $softDelete, $args, ['fieldName' => $classAnnotation->fieldName]);
+                            $this->processOnDeleteOperation($object, $onDelete, $property, $meta, $softDelete, $args, $config);
                         }
                     }
                 }
