@@ -18,6 +18,7 @@ use Evence\Bundle\SoftDeleteableExtensionBundle\Exception\OnSoftDeleteUnknownTyp
 use Evence\Bundle\SoftDeleteableExtensionBundle\Mapping\Annotation\onSoftDelete;
 use Evence\Bundle\SoftDeleteableExtensionBundle\Mapping\Annotation\onSoftDeleteSuccessor;
 use Gedmo\Mapping\ExtensionMetadataFactory;
+use Gedmo\SoftDeleteable\Mapping\Event\Adapter\ORM;
 use Gedmo\SoftDeleteable\SoftDeleteableListener as GedmoSoftDeleteableListener;
 
 /**
@@ -321,7 +322,7 @@ class SoftDeleteListener
         $meta = $em->getClassMetadata(get_class($object));
         $reflProp = $meta->getReflectionProperty($config['fieldName']);
         $oldValue = $reflProp->getValue($object);
-        if ($oldValue instanceof \Datetime) {
+        if ($oldValue !== null) {
             return;
         }
 
@@ -331,7 +332,9 @@ class SoftDeleteListener
             new LifecycleEventArgs($object, $em)
         );
 
-        $date = new \DateTime();
+        $ea = new ORM();
+        $ea->setEntityManager($em);
+        $date = $ea->getDateValue($meta, $config['fieldName']);
         $reflProp->setValue($object, $date);
 
         $uow = $em->getUnitOfWork();
